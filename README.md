@@ -14,19 +14,21 @@ A full-stack responsive web application built for Uganda Christian University (M
 2. Open `http://localhost/phpmyadmin`, go to the **SQL** tab, and execute `database/schema_and_seed.sql`.
    This creates the `ucu_lost_found` database and its tables.
 
-### 2. Backend Setup
-1. Navigate to `backend/`:
+### 2. Install and start the application
+1. From the project root (the folder containing `backend/` and `frontend/`), install
+   dependencies once:
    ```bash
-   cd backend
    npm install
    ```
 2. Copy `backend/.env.example` to `backend/.env`. The defaults match a typical XAMPP
    install (`127.0.0.1:3306`, user `root`, no password); update these if you changed
    your MySQL port or root password.
-3. Start the API server:
+3. Start both the API and frontend together:
    ```bash
-   npm start
+   npm run dev
    ```
+   The frontend opens at `http://localhost:5173`; Vite forwards API requests to the
+   backend at `http://localhost:5000`. Keep this terminal open while using the app.
 4. Open `http://localhost:5000/api/health`. A successful connection returns
    `{"status":"ok","database":"connected"}`. If it reports a database error, make
    sure XAMPP MySQL is running and the `.env` values match your XAMPP settings.
@@ -35,36 +37,45 @@ A full-stack responsive web application built for Uganda Christian University (M
    curl -X POST http://localhost:5000/api/seed-passwords
    ```
 
-### 3. Frontend Setup
-1. Open a new terminal in `frontend/`:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-2. Open the local Vite URL shown in your terminal (typically `http://localhost:5173`).
+### 3. Frontend access
+1. Open the local Vite URL shown in your terminal (typically `http://localhost:5173`).
    Vite forwards `/api` and `/uploads` requests to the backend at `http://localhost:5000`.
+   Vite listens on all network interfaces, so a phone on the same Wi-Fi network can open
+   `http://<computer-IP>:5173` (for example, `http://192.168.1.20:5173`). Find the computer
+   IP with `ipconfig` and allow Node/Vite through Windows Defender Firewall if prompted.
    To use another backend address in development, copy `frontend/.env.example` to
    `frontend/.env` and set `BACKEND_URL`.
 
-### 4. Production
-1. Build the frontend:
-   ```bash
-   cd frontend
-   npm run build
-   ```
-2. Start the backend with `npm start` from `backend/`. It serves the built frontend
-   and API from the same origin; the production app uses relative `/api` and `/uploads`
-   URLs, so it does not depend on localhost.
-3. Configure the backend's `.env` with the production database connection and a
-   private `JWT_SECRET`. Keep the database and uploaded files on persistent storage.
+### 4. Deploy publicly with Render
+The included `render.yaml` deploys the frontend and API together on one public URL.
+You will need a Render account, a hosted MySQL database that accepts connections from
+Render, and to push this project to your Git hosting provider.
 
-If you host the frontend and backend on different origins, set `VITE_API_URL` in the
-frontend build environment to the backend API URL (for example,
-`https://your-backend.example.com/api`). The backend must allow the frontend origin
-through CORS.
+1. Create a hosted MySQL database. Create the database named in its connection details
+   (or use the provider-assigned name) and make sure its network rules allow connections
+   from Render.
+2. In your Git provider, push this project, then in Render create a new Blueprint from
+   that repository and apply `render.yaml`.
+3. During setup, enter the MySQL connection values for `DB_HOST`, `DB_USER`,
+   `DB_PASSWORD`, and `DB_NAME`. Render generates a `JWT_SECRET`; do not replace it
+   with the local example value.
+4. Before the app is used, select the hosted database and run only the three `CREATE
+   TABLE` statements from `database/schema_and_seed.sql`. Skip its `CREATE DATABASE`,
+   `USE`, and demo `INSERT` statements. Those inserts include publicly documented demo
+   accounts. Create your own account through the app, then promote the intended
+   administrator account directly in the database, for example:
+   ```sql
+   UPDATE users SET role = 'ADMIN' WHERE email = 'your-admin-email@example.com';
+   ```
+5. Wait for the Render service's health check to pass, then open its public `onrender.com`
+   URL. The uploaded-image disk is persistent across app restarts.
+
+The Render web service and its persistent disk may require a paid plan. The MySQL
+database is hosted separately and may have its own cost. The local demo-password
+endpoint is disabled automatically when `NODE_ENV=production`.
 
 ## Demo Accounts (Password: `Password123!`)
+These accounts are for local development only. Do not seed them into the public database.
 - **Administrator:** `admin@ucu.ac.ug`
 - **Student (Okello):** `okello@students.ucu.ac.ug`
 - **Student (Namusoke):** `namusoke@students.ucu.ac.ug`

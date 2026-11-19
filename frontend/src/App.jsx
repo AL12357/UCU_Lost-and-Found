@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '');
 const API_ORIGIN = new URL(API_URL, window.location.origin).origin;
+const TEAM_PROFILES = [
+  'Mawejje Alesha',
+  'Nangiro Apollo',
+  'Mulungi Favour Priscilla',
+  'Osire Samuel',
+  'Okumu Oscar Ebiru',
+  'Nimusiima Cuthbert'
+];
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('ucu_token') || '');
@@ -169,13 +177,33 @@ export default function App() {
 
   if (!token) {
     return (
-      <main className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-md p-6 border border-slate-200">
-          <h1 className="text-2xl font-bold text-slate-900 text-center">UCU Campus Lost & Found</h1>
-          <p className="text-sm text-slate-600 text-center mt-1 mb-6">Uganda Christian University • Mukono Campus</p>
+      <main className="auth-page relative flex min-h-screen items-center justify-center p-4">
+        <nav aria-label="Site navigation" className="absolute right-4 top-4 z-20">
+          <details className="group relative">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-white/70 bg-slate-950/30 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-950/50 focus:outline-none focus:ring-2 focus:ring-blue-300">
+              Profiles
+              <svg aria-hidden="true" className="h-4 w-4 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.22 7.47a.75.75 0 0 1 1.06 0L10 11.19l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 8.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+              </svg>
+            </summary>
+            <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white py-2 text-slate-800 shadow-xl">
+              <p className="px-4 pb-2 pt-1 text-xs font-semibold uppercase tracking-widest text-slate-500">Project team</p>
+              <ul className="divide-y divide-slate-100">
+                {TEAM_PROFILES.map((name) => (
+                  <li key={name} className="px-4 py-2.5 text-sm">{name}</li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </nav>
+
+        <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white/40 p-4 shadow-md backdrop-blur-sm sm:p-6">
+          <h1 className="text-center text-2xl font-bold text-slate-900">UCU Campus Lost &amp; Found</h1>
+          <p className="mt-1 mb-6 text-center text-sm text-slate-600">Uganda Christian University • Mukono Campus</p>
+          <p className="-mt-3 mb-6 text-center text-sm leading-relaxed text-slate-700">Sign in to report, find, and reunite lost belongings across campus.</p>
 
           {message.text && (
-            <div role="alert" className={`p-3 rounded mb-4 text-sm font-medium ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+            <div role="alert" className={`mb-4 rounded p-3 text-sm font-medium ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
               {message.text}
             </div>
           )}
@@ -185,33 +213,33 @@ export default function App() {
               <>
                 <div>
                   <label htmlFor="full_name" className="block text-sm font-semibold text-slate-800">Full Name</label>
-                  <input id="full_name" required className="mt-1 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-700"
+                  <input id="full_name" required className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 focus:ring-2 focus:ring-blue-700"
                     value={authForm.full_name} onChange={e => setAuthForm({ ...authForm, full_name: e.target.value })} />
                 </div>
                 <div>
                   <label htmlFor="reg_no" className="block text-sm font-semibold text-slate-800">Registration Number</label>
-                  <input id="reg_no" required placeholder="e.g. S25D14/020" className="mt-1 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-700"
+                  <input id="reg_no" required placeholder="e.g. S25D14/020" className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 focus:ring-2 focus:ring-blue-700"
                     value={authForm.reg_no} onChange={e => setAuthForm({ ...authForm, reg_no: e.target.value })} />
                 </div>
               </>
             )}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-slate-800">University Email</label>
-              <input id="email" type="email" required className="mt-1 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-700"
+              <input id="email" type="email" required className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 focus:ring-2 focus:ring-blue-700"
                 value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })} />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-slate-800">Password</label>
-              <input id="password" type="password" required minLength={6} className="mt-1 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-700"
+              <input id="password" type="password" required minLength={6} className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 focus:ring-2 focus:ring-blue-700"
                 value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })} />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg focus:ring-4 focus:ring-blue-300">
+            <button type="submit" disabled={loading} className="w-full rounded-lg bg-blue-900 py-2.5 font-semibold text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300">
               {loading ? 'Processing...' : authMode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 
           <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-            className="mt-4 w-full text-sm text-blue-900 font-semibold underline focus:outline-none focus:ring-2 focus:ring-blue-700 rounded p-1">
+            className="mt-4 w-full rounded p-1 text-sm font-semibold text-blue-900 underline focus:outline-none focus:ring-2 focus:ring-blue-700">
             {authMode === 'login' ? 'Need a student account? Register here' : 'Already have an account? Sign in'}
           </button>
         </div>
@@ -227,22 +255,22 @@ export default function App() {
             <h1 className="text-lg font-bold">UCU Campus Lost & Found</h1>
             <p className="text-xs text-blue-200">{user.full_name} ({user.reg_no}) • Role: {user.role}</p>
           </div>
-          <nav aria-label="Main Navigation" className="flex flex-wrap gap-2">
-            <button onClick={() => setView('browse')} className={`px-3 py-1.5 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'browse' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
+          <nav aria-label="Main Navigation" className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+            <button onClick={() => setView('browse')} className={`px-3 py-2 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'browse' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
               Browse Items
             </button>
-            <button onClick={() => setView('report')} className={`px-3 py-1.5 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'report' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
+            <button onClick={() => setView('report')} className={`px-3 py-2 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'report' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
               + Report Item
             </button>
-            <button onClick={() => setView('claims')} className={`px-3 py-1.5 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'claims' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
+            <button onClick={() => setView('claims')} className={`px-3 py-2 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'claims' ? 'bg-blue-700' : 'bg-blue-900 hover:bg-blue-800'}`}>
               {user.role === 'ADMIN' ? 'All Claims' : 'My Claims'}
             </button>
             {user.role === 'ADMIN' && (
-              <button onClick={() => setView('admin')} className={`px-3 py-1.5 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'admin' ? 'bg-amber-600' : 'bg-amber-700 hover:bg-amber-600'}`}>
+              <button onClick={() => setView('admin')} className={`px-3 py-2 rounded text-sm font-medium focus:ring-2 focus:ring-white ${view === 'admin' ? 'bg-amber-600' : 'bg-amber-700 hover:bg-amber-600'}`}>
                 Admin Review Panel
               </button>
             )}
-            <button onClick={handleLogout} className="px-3 py-1.5 rounded text-sm font-medium bg-red-700 hover:bg-red-600 focus:ring-2 focus:ring-white">
+            <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium bg-red-700 hover:bg-red-600 focus:ring-2 focus:ring-white">
               Log Out
             </button>
           </nav>

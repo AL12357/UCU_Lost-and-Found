@@ -3,6 +3,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 const db = require('./db');
 const { authenticateToken, requireAdmin } = require('./middleware/auth');
@@ -11,13 +12,26 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use('/uploads', express.static(uploadsDir));
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
+  destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_'))
 });
 const upload = multer({ storage });
+
+app.get('/api/health', async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.json({ status: 'ok', database: 'connected' });
+  } catch (err) {
+    console.error('Database health check failed:', err.message);
+    res.status(503).json({ status: 'error', database: 'disconnected' });
+  }
+});
 
 // 1. AUTHENTICATION ENDPOINTS
 app.post('/api/register', async (req, res) => {
@@ -215,10 +229,25 @@ app.patch('/api/items/:id/return', authenticateToken, requireAdmin, async (req, 
   }
 });
 
-app.post('/api/seed-passwords', async (req, res) => {
-  const hash = await bcrypt.hash('Password123!', 10);
-  await db.query('UPDATE users SET password_hash = ?', [hash]);
-  res.json({ message: 'All demo account passwords set to: Password123!' });
+if (process.env.NODE_ENV !== 'production') {
+  app.post('/api/seed-passwords', async (req, res) => {
+    const hash = await bcrypt.hash('Password123!', 10);
+    await db.query('UPDATE users SET password_hash = ?', [hash]);
+    res.json({ message: 'All demo account passwords set to: Password123!' });
+  });
+}
+
+const port = process.env.PORT || 5000;
+const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+
+app.use(express.static(frontendDist));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next();
+  res.sendFile(path.join(frontendDist, 'index.html'), err => {
+    if (err) next();
+  });
 });
 
-app.listen(process.env.PORT, () => console.log(`UCU Lost & Found API running on port ${process.env.PORT}`));
+app.listen(port, '0.0.0.0', () => {
+  console.log(`UCU Lost & Found API running on http://0.0.0.0:${port}`);
+});
