@@ -6,6 +6,8 @@
     "frontend"
   ],
   "scripts": {
+    "build": "npm run build --workspace=ucu-lost-found-frontend",
+    "start": "npm run start --workspace=ucu-lost-found-backend",
     "dev": "concurrently --kill-others --names backend,frontend \"npm run start --workspace=ucu-lost-found-backend\" \"npm run dev --workspace=ucu-lost-found-frontend\""
   },
   "devDependencies": {
